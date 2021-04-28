@@ -2,9 +2,9 @@
 function chart({years,months,month_max_min}={})
  {
     // const svg = d3.create("svg").attr("viewBox", [0, 0, width, height])
-    var margin = {top:50, right:100, bottom:50, left:80},
+    var margin = {top:50, right:100, bottom:0, left:80},
            totalWidth = 1000,
-           totalHeight = 560,
+           totalHeight = 600,
            width = totalWidth - margin.left - margin.right,
            height = totalHeight - margin.top - margin.bottom,
            grid_size = 30;

@@ -28,7 +28,7 @@
           title: "Temperature (°C)"
         })</script>
 
-        <script type = "text/javascript" src="chart.js"></script>
+        <script type = "text/javascript" src="chart_l2.js"></script>
 
         <script>
         var switch_state = 1;
@@ -51,7 +51,7 @@
             let a = new Array();
             for (let i = 0; i < d.length; i++){
               let x = new Date(time_parse(d[i].date));
-              if (x.getFullYear() > 1996) {
+              if (x.getFullYear() > 2007) {
                 a.push({
                   year: +year_format(time_parse(d[i].date)),
                   month: months[parseInt(month_format(time_parse(d[i].date))) - 1],
@@ -76,24 +76,25 @@
                 year: years[i],
                 month: months[j],
                 month_max:d3.max(monthly_data, function(d){return d.max_temperature;}),
-                month_min:d3.min(monthly_data, function(d){return d.min_temperature;})
+                month_min:d3.min(monthly_data, function(d){return d.min_temperature;}),
+                daily_d: monthly_data.map(function(d) {
+                            return {
+                                day: d.day,
+                                min_temperature: d.max_temperature,
+                                max_temperature: d.min_temperature,
+                            }
+                        })
               });
             }
           }
           console.log('month_max_min',month_max_min)
-          // 不太显眼
           color_scale = d3.scaleSequential()
             .domain([0,40]).interpolator(d3.interpolateViridis);
-          // var colors = ['#440154', '#482475','#414487','#355f8d','#2a788e','#21918c', '#22a884','#44bf70', '#7ad151', '#bddf26', '#fde725']
-          // color_scale = d3.scaleQuantile()
-          //   .domain([d3.min(month_max_min, function(d){ return d.month_max;}),
-          //             d3.max(month_max_min, function(d){ return d.month_min;})])
-          //             .range(colors);  
-
           grids = chart({
             years: years,
             months: months,
-            month_max_min: month_max_min
+            month_max_min: month_max_min,
+            data: data
           });
           Switch_max_min = function(){
             if (switch_state == 1){
