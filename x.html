@@ -1,0 +1,145 @@
+<html> 
+  <head> 
+        <meta charset="utf-8"> 
+        <title>HelloWorld</title> 
+  </head> 
+    <body> 
+        <!-- <p>Hello World 1</p>
+        <p>Hello World 2</p> -->
+        <script src="https://d3js.org/d3.v6.min.js" charset="utf-8"></script>
+        <svg></svg>
+        <script type = "text/javascript" src="mf.js"></script>
+        <script>legend({
+            color: d3.scaleSequential([0, 100], d3.interpolateViridis),
+            title: "shit (°F)"
+          })</script>
+          <script type = "text/javascript" src="chart.js"></script>
+
+          <script>
+          color = d3.scaleSequential().domain(d3.range(0,40)).interpolator(d3.interpolateYlGnBu).unknown("#ccc");
+          timeParse = d3.timeParse("%Y-%m-%d");
+          // d3.csv("https://raw.githubusercontent.com/HKUST-VISLab/coding-challenge/master/temperature_daily.csv").then( function(data) {
+          //   ddd = [];
+          //   data.forEach(function(d){
+          //   let a = new Date(timeParse(d.date));
+          //   if(a.getFullYear()>1996){
+          //     ddd.push( {
+          //       date: a,
+          //       max_temperature: +d.max_temperature,
+          //        min_temperature: +d.min_temperature,})
+          //       }
+          //     })});
+          // var data;
+          // d3.csv("https://raw.githubusercontent.com/HKUST-VISLab/coding-challenge/master/temperature_daily.csv", function(d) {
+          //   let a = new Date(timeParse(d.date));
+          //   if(a.getFullYear()>1996){
+          //     return {
+          //       date: a,
+          //       max_temperature: +d.max_temperature,
+          //        min_temperature: +d.min_temperature,}
+          //       };
+          //     }).then(function(dad) {
+          //       data =dad;
+          //       console.log(data);
+          //     });
+
+          //  console.log(data)
+          (async () => {
+          let data = await d3.csv("https://raw.githubusercontent.com/HKUST-VISLab/coding-challenge/master/temperature_daily.csv").then( function(d) {
+            let a = new Date(timeParse(d.date));
+            if(a.getFullYear()>1996){
+              return {
+                date: a,
+                max_temperature: +d.max_temperature,
+                 min_temperature: +d.min_temperature};
+                }
+              });
+          console.log(data);
+
+            d2YM = function(d){
+            let a = new Array()
+            for (let i = 0; i < d.length; i++){
+              a.push({
+                Year: d[i].date.getFullYear(),
+                Month: d[i].date.getMonth()+1,
+                max_temperature: +d[i].max_temperature,
+                min_temperature: +d[i].min_temperature,
+              })
+            }
+            return a;};
+          
+          getMaxMin = function(d){
+            let a = new Array()
+            a.push(d[0])
+            for (let i = 1; i < d.length; i++){
+              if(d[i].Year == d[i-1].Year && d[i].Month == d[i-1].Month){
+                a[a.length-1].max_temperature = Math.max(d[i].max_temperature,a[a.length-1].max_temperature)
+                a[a.length-1].min_temperature = Math.min(d[i].min_temperature,a[a.length-1].min_temperature)
+              }
+              else{
+                a.push(d[i])
+              }
+            }
+            return a
+          };
+          getTemperature = function(d){
+            let result = new Array()
+            let dates = new Array()
+            let max = new Array()
+            let min = new Array()
+            let Date = new Array()
+            let year = d[0].date.getFullYear()
+            let month = d[0].date.getMonth()
+            for (let i = 0; i < d.length; i++){
+              if(d[i].date.getFullYear() == 1997 && d[i].date.getMonth() == 11){
+                max.push(d[i].max_temperature)
+                min.push(d[i].min_temperature)
+                Date.push(d[i].date.getDate())
+              }
+              else{
+                result.push({
+                  date: Date,
+                  Year: year,
+                  Month: month+1 ,
+                  max_temperature: max,
+                  min_temperature: min
+                })
+                year = d[i].date.getFullYear()
+                month = d[i].date.getMonth()
+                max = [d[i].max_temperature]
+                min = [d[i].min_temperature]
+                Date = [d[i].date.getDate()]
+            }
+          }
+            return result
+          };
+          data_1 = d2YM(data);
+          data_2 = getMaxMin(data_1);
+          data_3 = getTemperature(data);
+
+          margin = ({top: 20, right: 20, bottom: 20, left: 20});
+          height = 800;
+          width = 1200;
+          line = d3.line().x((d,i) => x1(data_3[0].date[i])+x(2008)).y((d,i) => y1(d)+y(1));
+          line0 = d3.line().x(d => x1(d.date)+x(d.year)).y(d => y1(d.max)+y(d.month));
+          x = d3.scaleBand().domain(d3.range(2008,2018)).range([margin.left, width - margin.right]).padding(1);
+          y = d3.scaleBand().domain(d3.range(1,13)).range([margin.top, height - margin.bottom]);
+          x1 = d3.scaleBand()
+          .domain(d3.range(1,32))
+          .range([-50, 50])
+          .padding(1);
+          y1 = d3.scaleBand()
+          .domain(d3.range(0,50))
+          .range([0,60]);
+          xAxis = d3.axisBottom(x);
+          chart({
+            width:width,
+            height:height,
+            data_2: data_2
+          })
+})();
+
+
+    </script>
+    </body> 
+</html>
