@@ -63,10 +63,10 @@ function chart({years,months,month_max_min,data}={})
         .range([0, grid_size.height]);
     var min_line = d3.line()
         .x(function(d){ return line_x_scale(d.day); })
-        .y(function(d){ return line_y_scale(d.min_temperature); });
+        .y(function(d){ return grid_size.height - line_y_scale(d.min_temperature); });
     var max_line = d3.line()
         .x(function(d){ return line_x_scale(d.day); })
-        .y(function(d){ return line_y_scale(d.max_temperature); });
+        .y(function(d){ return grid_size.height - line_y_scale(d.max_temperature); });
     
     svg.append("g").selectAll("path")
         .data(month_max_min)
@@ -74,7 +74,7 @@ function chart({years,months,month_max_min,data}={})
         .append('path')
         .attr('class', 'line')
         .attr('d', function(d){ return min_line(d.daily_d);})
-        .attr("stroke", "pink")
+        .attr("stroke", "blue")
         .attr("stroke-width", 2)
         .attr("fill", "transparent")
         .attr('transform', function(d){ 

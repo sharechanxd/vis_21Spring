@@ -1,11 +1,11 @@
 <html> 
   <head> 
         <meta charset="utf-8"> 
-        <title>Level-1</title> 
+        <title>Level-2</title> 
         <style>
           .juzhong {
               position: absolute;
-              left: 330px;
+              left: 600px;
               width: 300px;
               padding: 10px;
               color: #73AD21;
@@ -80,8 +80,8 @@
                 daily_d: monthly_data.map(function(d) {
                             return {
                                 day: d.day,
-                                min_temperature: d.max_temperature,
-                                max_temperature: d.min_temperature,
+                                min_temperature: d.min_temperature,
+                                max_temperature: d.max_temperature,
                             }
                         })
               });
@@ -96,6 +96,7 @@
             month_max_min: month_max_min,
             data: data
           });
+
           Switch_max_min = function(){
             if (switch_state == 1){
                 grids.transition().style("fill", function(d){ 
