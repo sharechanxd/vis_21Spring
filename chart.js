@@ -1,7 +1,20 @@
-function chart({width,height,data_2}={})
+
+function chart({years,months,month_max_min}={})
  {
-    const svg = d3.create("svg").attr("viewBox", [0, 0, width, height])
-    var tooltip = d3.select("body")
+    // const svg = d3.create("svg").attr("viewBox", [0, 0, width, height])
+    var margin = {top:50, right:100, bottom:50, left:80},
+           totalWidth = 1000,
+           totalHeight = 560,
+           width = totalWidth - margin.left - margin.right,
+           height = totalHeight - margin.top - margin.bottom,
+           grid_size = 30;
+    var svg = d3.select("#chart").append("svg")
+                .attr("width", totalWidth)
+                .attr("height", totalHeight)
+                .append("g")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    var tooltip = d3.select("#chart")
         .append("div")
         .style("position", "absolute")
         .style("z-index", "10")
@@ -13,59 +26,35 @@ function chart({width,height,data_2}={})
         .style("border-radius", "5px")
         .style("padding", "5px")
     
-    svg.append("g")
-      .selectAll("rect")
-      .data(data_2)
+    var x_scale = d3.scaleBand()
+        .domain(years)
+        .range([0, width]);
+    var y_scale = d3.scaleBand()
+        .domain(months)
+        .range([0, height]);
+    var xAxis = d3.axisTop(x_scale);
+    var yAxis = d3.axisLeft(y_scale);
+    svg.append("g").call(xAxis);
+    svg.append("g").call(yAxis);
+
+    grids = svg.append("g")
+      .selectAll("grid")
+      .data(month_max_min)
       .enter()
       .append("rect")
-        .attr("x", function(d) { return x(d.year)-50} )
-        .attr("y", function(d) { return y(d.month)+5} )
-        .attr("height", 60)
-        .attr("width", 100)
-        .attr("fill", d => color(d.max_temperature/40))
-       .on("mouseover", function(){
-                d3.select(this).transition()
-                 .duration('50')
-                 .attr('opacity', '.5');
-                tooltip.style("visibility", "visible");})
-       .on("mousemove", function(d){
-                tooltip.html("Date:"+d.year+"-"+d.month+""+", max:"+d.max_temperature+", min:"+d.min_temperature)
-                tooltip.style("top",(d3.event.pageY-10)+"px").style("left",(d3.event.pageX+10)+"px");})
-       .on("mouseout", function(){
-                d3.select(this).transition()
-                  .duration('50')
-                  .attr('opacity', '1');
-                tooltip.style("visibility", "hidden");})
-    
-    // const path = svg.append("g")
-    //     .attr("fill", "none")
-    //     .attr("stroke", "black")
-    //     .attr("stroke-width", 1.5)
-    //     .attr("stroke-linejoin", "round")
-    //     .attr("stroke-linecap", "round")
-    //   .selectAll("path")
-    //   .data(data_2008)
-    //   .enter()
-    //   .append("path")
-    //     .attr("d", d => line0(d))
-    
-    // const path1 = svg.append("g")
-    //     .attr("fill", "none")
-    //     .attr("stroke", "black")
-    //     .attr("stroke-width", 1.5)
-    //     .attr("stroke-linejoin", "round")
-    //     .attr("stroke-linecap", "round")
-    //     .append("path")
-    //       .attr("d",line0(data_2008))
-          
-    
-    
-    svg.append("g")
-        .call(xAxis);
-  
-    svg.append("g")
-        .call(yAxis);
-  
-    return svg.node();
+        .attr("x", function(d) { return x_scale(d.year) + 5;} )
+        .attr("y", function(d) { return y_scale(d.month) + 5;} )
+        .attr("height", grid_size)
+        .attr("width", grid_size)
+        .style("fill", function(d){ if(d.month_max > 0)
+            return color_scale(d.month_max);
+          else
+            return "transparent"})
+            .on("mouseover", function(d){ tooltip.text("Date: " + d.month + " " + d.year + ", Max: " + Math.round(d.month_max) + ", Min: " + Math.round(d.month_min)); 
+              return tooltip.style("visibility", "visible"); })
+            .on("mousemove", function(){ return tooltip.style("top", (d3.event.pageY - 10) + "px").style("left",(d3.event.pageX + 10) + "px"); })
+            .on("mouseout", function(){ return tooltip.style("visibility", "hidden"); });
+
+    return grids;
     }
 

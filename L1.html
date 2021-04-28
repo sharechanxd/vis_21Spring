@@ -1,0 +1,131 @@
+<html> 
+  <head> 
+        <meta charset="utf-8"> 
+        <title>Level-1</title> 
+        <style>
+          .juzhong {
+              position: absolute;
+              left: 330px;
+              width: 300px;
+              padding: 10px;
+              color: #73AD21;
+          }
+          </style>
+  </head> 
+    <body> 
+      <h2 class="juzhong">Year/Month Heatmap</h2>
+      <script src="https://d3js.org/d3.v5.min.js" charset="utf-8"></script>
+      <div style="padding-left:2px; padding-top:10px;">
+        <button id="switchBtn" onclick="Switch_max_min()">Switch to Min</button>
+        </div>
+      <div id = "chart"></div>
+      <svg></svg>
+
+      <script type = "text/javascript" src="legend.js"></script>
+
+      <script>legend({
+          color: d3.scaleSequential([0, 40], d3.interpolateViridis),
+          title: "Temperature (°C)"
+        })</script>
+
+        <script type = "text/javascript" src="chart.js"></script>
+
+        <script>
+        var switch_state = 1;
+
+        var margin = {top:50, right:100, bottom:50, left:80},
+          totalWidth = 1000,
+          totalHeight = 560,
+          width = totalWidth - margin.left - margin.right,
+          height = totalHeight - margin.top - margin.bottom,
+          grid_size = 30,
+          legend_size = {width:20, height:30};
+
+        var time_parse = d3.timeParse("%Y-%m-%d");
+        var year_format = d3.timeFormat("%Y");
+        var month_format = d3.timeFormat("%m");
+        var day_format = d3.timeFormat("%d");
+        
+        var years = [];
+        var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        var color_scale, grids;
+        var month_max_min = [];
+
+
+        (async () => {
+          let data = await d3.dsv(',',"https://raw.githubusercontent.com/sharechanxd/vis_21Spring/main/temperature_daily.csv")
+          .then(function(d) {
+            // console.log('接口返回值', d);
+            let a = new Array();
+            for (let i = 0; i < d.length; i++){
+              let x = new Date(time_parse(d[i].date));
+              if (x.getFullYear() > 1996) {
+                a.push({
+                  year: +year_format(time_parse(d[i].date)),
+                  month: months[parseInt(month_format(time_parse(d[i].date))) - 1],
+                  day: +day_format(time_parse(d[i].date)),
+                  max_temperature: +d[i].max_temperature,
+                  min_temperature: +d[i].min_temperature
+                })
+              };
+            }
+            return a;});
+            // console.log('处理结果', a);
+          // console.log('处理结果', data);
+
+          var year_range = d3.extent(data, function(d){return d.year});
+          for (i = year_range[0]; i <= year_range[1];i++){
+            years.push(i);
+          }
+          for(var i = 0; i < years.length; i++){
+            for(var j = 0; j < months.length;j++){
+              var monthly_data = data.filter(function(d){return d.year == years[i] && d.month == months[j]; });
+              month_max_min.push({
+                year: years[i],
+                month: months[j],
+                month_max:d3.max(monthly_data, function(d){return d.max_temperature;}),
+                month_min:d3.min(monthly_data, function(d){return d.min_temperature;})
+              });
+            }
+          }
+          console.log('month_max_min',month_max_min)
+          // 不太显眼
+          color_scale = d3.scaleSequential()
+            .domain([0,40]).interpolator(d3.interpolateViridis);
+          // var colors = ['#440154', '#482475','#414487','#355f8d','#2a788e','#21918c', '#22a884','#44bf70', '#7ad151', '#bddf26', '#fde725']
+          // color_scale = d3.scaleQuantile()
+          //   .domain([d3.min(month_max_min, function(d){ return d.month_max;}),
+          //             d3.max(month_max_min, function(d){ return d.month_min;})])
+          //             .range(colors);  
+
+          grids = chart({
+            years: years,
+            months: months,
+            month_max_min: month_max_min
+          });
+          Switch_max_min = function(){
+            if (switch_state == 1){
+                grids.transition().style("fill", function(d){ 
+                    if (d.month_min > 0) 
+                        return color_scale(d.month_min);
+                    else
+                        return "transparent"});
+                switch_state = 0;    
+                switchBtn.innerHTML = "Switch to Max";
+            }
+            else{ 
+                grids.transition().style("fill", function(d){ 
+                    if (d.month_max > 0) 
+                        return color_scale(d.month_max);
+                    else
+                        return "transparent"});    
+                switch_state = 1;
+                switchBtn.innerHTML = "Switch to Min";
+            }    
+        } 
+    // 这里你能同步的获取到 data
+  })();
+  // 这里 data 是异步的
+        </script> 
+    </body> 
+</html>
